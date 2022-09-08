@@ -3,12 +3,8 @@ import curses
 import asyncio
 from random import randint, choice
 import os
-from environs import Env
 from itertools import cycle
 
-
-env = Env()
-env.read_env()
 
 TIC_TIMEOUT = 0.1
 
@@ -60,7 +56,8 @@ def read_controls(canvas):
 
 
 def draw_frame(canvas, start_row, start_column, text, negative=False):
-    """Draw multiline text fragment on canvas, erase text instead of drawing if negative=True is specified."""
+    """Draw multiline text fragment on canvas, erase text instead of
+    drawing if negative=True is specified."""
     rows_number, columns_number = canvas.getmaxyx()
 
     for row, line in enumerate(text.splitlines(), round(start_row)):
@@ -90,10 +87,20 @@ def draw_frame(canvas, start_row, start_column, text, negative=False):
             canvas.addch(row, column, symbol)
 
 
+def get_animation_frames(path):
+    animation_frames = []
+    for filename in os.listdir(path):
+        with open(os.path.join(path, filename), 'r') as file:
+            animation_frames.append(file.read())
+    return animation_frames
+
+
 async def animate_spaceship(canvas):
     row, column = [coordinate / 2 for coordinate in curses.window.getmaxyx(canvas)]
     max_row, max_column = curses.window.getmaxyx(canvas)
-    for frame in cycle(animation_frames):
+    frames = get_animation_frames('animation')
+
+    for frame in cycle(frames):
         rows_direction, columns_direction, space_pressed = read_controls(canvas)
         frame_size_x, frame_size_y = get_frame_size(frame)
 
@@ -179,9 +186,20 @@ def draw(canvas):
          choice('+*.:'))
         for _ in range(50)]
 
-    coroutines = [blink(canvas, row, column, symbol) for row, column, symbol in stars]
-    coroutines.append(fire(canvas, window_height / 2, window_width / 2, rows_speed=-0.3, columns_speed=0))
+    coroutines = [
+        blink(canvas, row, column, symbol) for row, column, symbol in stars
+    ]
+    coroutines.append(
+        fire(
+            canvas,
+            window_height / 2,
+            window_width / 2,
+            rows_speed=-0.3,
+            columns_speed=0
+        )
+    )
     coroutines.append(animate_spaceship(canvas))
+
     while True:
         for coroutine in coroutines:
             try:
@@ -192,11 +210,11 @@ def draw(canvas):
         time.sleep(TIC_TIMEOUT)
 
 
-if __name__ == '__main__':
-    animation_frames = []
-    for filename in os.listdir('animation'):
-        with open(f'animation/{filename}', 'r') as file:
-            animation_frames.append(file.read())
+def main():
     curses.update_lines_cols()
     while True:
         curses.wrapper(draw)
+
+
+if __name__ == '__main__':
+    main()
