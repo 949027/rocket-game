@@ -212,8 +212,7 @@ def draw(canvas):
 
 def main():
     curses.update_lines_cols()
-    while True:
-        curses.wrapper(draw)
+    curses.wrapper(draw)
 
 
 if __name__ == '__main__':
