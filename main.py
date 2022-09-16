@@ -204,9 +204,10 @@ def draw(canvas):
         for coroutine in coroutines:
             try:
                 coroutine.send(None)
-                canvas.refresh()
             except StopIteration:
                 coroutines.remove(coroutine)
+
+        canvas.refresh()
         time.sleep(TIC_TIMEOUT)
 
 
