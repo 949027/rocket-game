@@ -95,10 +95,9 @@ def get_animation_frames(path):
     return animation_frames
 
 
-async def animate_spaceship(canvas):
+async def animate_spaceship(canvas, frames):
     row, column = [coordinate / 2 for coordinate in curses.window.getmaxyx(canvas)]
     max_row, max_column = curses.window.getmaxyx(canvas)
-    frames = get_animation_frames('animation')
 
     for frame in cycle(frames):
         rows_direction, columns_direction, space_pressed = read_controls(canvas)
@@ -180,6 +179,8 @@ def draw(canvas):
     canvas.border()
     window_height, window_width = curses.window.getmaxyx(canvas)
 
+    frames = get_animation_frames('animation')
+
     stars = [
         (randint(1, window_height - 2),
          randint(1, window_width - 2),
@@ -199,7 +200,7 @@ def draw(canvas):
             columns_speed=0
         )
     )
-    coroutines.append(animate_spaceship(canvas))
+    coroutines.append(animate_spaceship(canvas, frames))
 
     while True:
         for coroutine in coroutines:
