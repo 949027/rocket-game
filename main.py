@@ -96,26 +96,29 @@ def get_animation_frames(path):
 
 
 async def animate_spaceship(canvas, frames):
-    row, column = [coordinate / 2 for coordinate in curses.window.getmaxyx(canvas)]
-    max_row, max_column = curses.window.getmaxyx(canvas)
+    max_row, max_column = [
+        coordinate - 1 for coordinate in curses.window.getmaxyx(canvas)# -1 т.к. getmaxyx возвращает размеры окна, а не координаты крайних ячеек
+    ]
+    row = max_row / 2
+    column = max_column / 2
 
     for frame in cycle(frames):
         rows_direction, columns_direction, space_pressed = read_controls(canvas)
         frame_size_x, frame_size_y = get_frame_size(frame)
 
-        if 0 < row + rows_direction < max_row - frame_size_y:
+        if 0 < row + rows_direction <= max_row - frame_size_y:
             row += rows_direction
         elif row + rows_direction <= 0:
             row = 1
-        elif row + rows_direction >= max_row - frame_size_y:
-            row = max_row - frame_size_y - 1
+        elif row + rows_direction > max_row - frame_size_y:
+            row = max_row - frame_size_y
 
-        if 0 < column + columns_direction < max_column - frame_size_x:
+        if 0 < column + columns_direction <= max_column - frame_size_x:
             column += columns_direction
         elif column + columns_direction <= 0:
             column = 1
-        elif column + columns_direction >= max_column - frame_size_x:
-            column = max_column - frame_size_x - 1
+        elif column + columns_direction > max_column - frame_size_x:
+            column = max_column - frame_size_x
 
         draw_frame(canvas, row, column, frame)
         await asyncio.sleep(0)
