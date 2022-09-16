@@ -123,9 +123,9 @@ async def animate_spaceship(canvas):
         draw_frame(canvas, row, column, frame, True)
 
 
-async def blink(canvas, row, column, symbol):
+async def blink(canvas, row, column, symbol, offset_tics):
     while True:
-        for _ in range(randint(1, 20)):
+        for _ in range(offset_tics):
             await asyncio.sleep(0)
 
         canvas.addstr(row, column, symbol, curses.A_DIM)
@@ -187,7 +187,8 @@ def draw(canvas):
         for _ in range(50)]
 
     coroutines = [
-        blink(canvas, row, column, symbol) for row, column, symbol in stars
+        blink(canvas, row, column, symbol, offset_tics=randint(1, 20))
+        for row, column, symbol in stars
     ]
     coroutines.append(
         fire(
