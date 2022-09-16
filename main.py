@@ -7,6 +7,7 @@ from itertools import cycle
 
 
 TIC_TIMEOUT = 0.1
+STARS_AMOUNT = 50
 
 SPACE_KEY_CODE = 32
 LEFT_KEY_CODE = 260
@@ -184,12 +185,13 @@ def draw(canvas):
     window_height, window_width = curses.window.getmaxyx(canvas)
 
     frames = get_animation_frames('animation')
-
+    starplace_range_x = (1, window_height - 2)
+    starplace_range_y = (1, window_width - 2)
     stars = [
-        (randint(1, window_height - 2),
-         randint(1, window_width - 2),
+        (randint(*starplace_range_x),
+         randint(*starplace_range_y),
          choice('+*.:'))
-        for _ in range(50)]
+        for _ in range(STARS_AMOUNT)]
 
     coroutines = [
         blink(canvas, row, column, symbol, offset_tics=randint(1, 20))
