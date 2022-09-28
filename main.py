@@ -5,6 +5,8 @@ from random import randint, choice
 import os
 from itertools import cycle
 
+from physics import update_speed
+
 
 TIC_TIMEOUT = 0.1
 STARS_AMOUNT = 50
@@ -39,16 +41,16 @@ def read_controls(canvas):
             break
 
         if pressed_key_code == UP_KEY_CODE:
-            rows_direction = -10
+            rows_direction = -1
 
         if pressed_key_code == DOWN_KEY_CODE:
-            rows_direction = 10
+            rows_direction = 1
 
         if pressed_key_code == RIGHT_KEY_CODE:
-            columns_direction = 10
+            columns_direction = 1
 
         if pressed_key_code == LEFT_KEY_CODE:
-            columns_direction = -10
+            columns_direction = -1
 
         if pressed_key_code == SPACE_KEY_CODE:
             space_pressed = True
@@ -133,25 +135,26 @@ async def animate_spaceship(canvas, frames):
         coordinate - 1 for coordinate in curses.window.getmaxyx(canvas)
         # -1 т.к. getmaxyx возвращает размеры окна, а не координаты крайних ячеек
     ]
-    row = max_row / 2
-    column = max_column / 2
+    row = column = 10
+    row_speed = column_speed = 0
 
     for frame in cycle(frames):
         frame_size_x, frame_size_y = get_frame_size(frame)
 
         for _ in range(2):
             rows_direction, columns_direction, space_pressed = read_controls(canvas)
-            target_row = row + rows_direction
-            target_column = column + columns_direction
+            row_speed, column_speed = update_speed(row_speed, column_speed, rows_direction, columns_direction)
+            target_row = row + rows_direction + row_speed
+            target_column = column + columns_direction + column_speed
 
-            if rows_direction > 0:
+            if target_row > row:
                 row = min(target_row, max_row - frame_size_y)
-            elif rows_direction < 0:
+            elif target_row < row:
                 row = max(target_row, 1)
 
-            if columns_direction > 0:
+            if target_column > column:
                 column = min(target_column, max_column - frame_size_x)
-            elif columns_direction < 0:
+            elif target_column < column:
                 column = max(target_column, 1)
 
             draw_frame(canvas, row, column, frame)
