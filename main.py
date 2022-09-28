@@ -96,6 +96,38 @@ def get_animation_frames(path):
     return animation_frames
 
 
+async def sleep(tics=1):
+    for _ in range(tics):
+        await asyncio.sleep(0)
+
+
+async def fill_orbit_with_garbage(canvas, frames):
+    _, canvas_max_x = canvas.getmaxyx()
+
+    while True:
+        for frame in frames:
+            frame_size_x, _ = get_frame_size(frame)
+            max_row = canvas_max_x - frame_size_x - 2 #todo почему 2?
+            coroutines.append(fly_garbage(canvas, column=randint(1, max_row), garbage_frame=frame))
+            await sleep(20) #TODO сделать для остальных for
+
+
+async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
+    """Animate garbage, flying from top to bottom. Сolumn position will stay same, as specified on start."""
+    rows_number, columns_number = canvas.getmaxyx()
+
+    column = max(column, 0)
+    column = min(column, columns_number - 1)
+
+    row = 0
+
+    while row < rows_number:
+        draw_frame(canvas, row, column, garbage_frame)
+        await asyncio.sleep(0)
+        draw_frame(canvas, row, column, garbage_frame, negative=True)
+        row += speed
+
+
 async def animate_spaceship(canvas, frames):
     max_row, max_column = [
         coordinate - 1 for coordinate in curses.window.getmaxyx(canvas)
@@ -184,7 +216,7 @@ def draw(canvas):
     canvas.border()
     window_height, window_width = curses.window.getmaxyx(canvas)
 
-    frames = get_animation_frames('animation')
+    spaceship_frames = get_animation_frames('animation/spaceship')
     starplace_range_x = (1, window_height - 2)
     starplace_range_y = (1, window_width - 2)
     stars = [
@@ -193,6 +225,7 @@ def draw(canvas):
          choice('+*.:'))
         for _ in range(STARS_AMOUNT)]
 
+    global coroutines
     coroutines = [
         blink(canvas, row, column, symbol, offset_tics=randint(1, 20))
         for row, column, symbol in stars
@@ -206,7 +239,13 @@ def draw(canvas):
             columns_speed=0
         )
     )
-    coroutines.append(animate_spaceship(canvas, frames))
+    coroutines.append(animate_spaceship(canvas, spaceship_frames))
+
+    garbage_frames = get_animation_frames('animation/garbage')
+    # with open('animation/garbage/trash_large.txt', "r") as garbage_file:
+    #     garbage_frame = garbage_file.read()
+
+    coroutines.append(fill_orbit_with_garbage(canvas, garbage_frames))
 
     while True:
         for coroutine in coroutines:
