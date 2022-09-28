@@ -157,6 +157,18 @@ async def animate_spaceship(canvas, frames):
             elif target_column < column:
                 column = max(target_column, 1)
 
+            if space_pressed:
+                gun_column = column + (frame_size_x / 2)
+                coroutines.append(
+                    fire(
+                        canvas,
+                        row,
+                        gun_column,
+                        rows_speed=-0.3,
+                        columns_speed=0
+                    )
+                )
+
             draw_frame(canvas, row, column, frame)
             await asyncio.sleep(0)
             draw_frame(canvas, row, column, frame, True)
@@ -233,15 +245,7 @@ def draw(canvas):
         blink(canvas, row, column, symbol, offset_tics=randint(1, 20))
         for row, column, symbol in stars
     ]
-    coroutines.append(
-        fire(
-            canvas,
-            window_height / 2,
-            window_width / 2,
-            rows_speed=-0.3,
-            columns_speed=0
-        )
-    )
+
     coroutines.append(animate_spaceship(canvas, spaceship_frames))
 
     garbage_frames = get_animation_frames('animation/garbage')
