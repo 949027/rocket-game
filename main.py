@@ -1,16 +1,19 @@
 import time
 import curses
 import asyncio
+import uuid
 from random import randint, choice
 import os
 from itertools import cycle
 
 from curses_tools import get_frame_size, draw_frame, read_controls
+from obstacles import Obstacle, show_obstacles
 from physics import update_speed
 
 
 TIC_TIMEOUT = 0.1
 STARS_AMOUNT = 50
+obstacles = []
 
 
 def get_animation_frames(path):
@@ -46,11 +49,19 @@ async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
 
     row = 0
 
-    while row < rows_number:
-        draw_frame(canvas, row, column, garbage_frame)
-        await asyncio.sleep(0)
-        draw_frame(canvas, row, column, garbage_frame, negative=True)
-        row += speed
+    frame_columns_size, frame_rows_size = get_frame_size(garbage_frame)
+    obstacle = Obstacle(row, column, frame_rows_size, frame_columns_size, uuid.uuid1())
+    obstacles.append(obstacle)
+
+    try:
+        while row < rows_number:
+            draw_frame(canvas, row, column, garbage_frame)
+            obstacle.row, obstacle.column = row, column
+            await asyncio.sleep(0)
+            draw_frame(canvas, row, column, garbage_frame, negative=True)
+            row += speed
+    finally:
+        obstacles.remove(obstacle)
 
 
 async def animate_spaceship(canvas, frames):
@@ -176,6 +187,8 @@ def draw(canvas):
     #     garbage_frame = garbage_file.read()
 
     coroutines.append(fill_orbit_with_garbage(canvas, garbage_frames))
+
+    coroutines.append(show_obstacles(canvas, obstacles))
 
     while True:
         for coroutine in coroutines:
