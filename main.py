@@ -159,6 +159,9 @@ async def fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0
         row += rows_speed
         column += columns_speed
 
+        for obstacle in obstacles:
+            if obstacle.has_collision(row, column):
+                return None
 
 def draw(canvas):
     curses.curs_set(False)
