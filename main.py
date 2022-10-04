@@ -7,6 +7,7 @@ import os
 from itertools import cycle
 
 from curses_tools import get_frame_size, draw_frame, read_controls
+from explosion import explode
 from obstacles import Obstacle, show_obstacles
 from physics import update_speed
 
@@ -56,15 +57,15 @@ async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
 
     try:
         while row < rows_number:
+            if obstacle in obstacles_in_last_collisions:
+                obstacles_in_last_collisions.remove(obstacle)
+                await explode(canvas, row + frame_rows_size, column)
+                return None
+
             draw_frame(canvas, row, column, garbage_frame)
             obstacle.row, obstacle.column = row, column
             await asyncio.sleep(0)
             draw_frame(canvas, row, column, garbage_frame, negative=True)
-
-            if obstacle in obstacles_in_last_collisions:
-                obstacles_in_last_collisions.remove(obstacle)
-                return None
-
             row += speed
     finally:
         obstacles.remove(obstacle)
