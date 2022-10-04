@@ -14,6 +14,7 @@ from physics import update_speed
 TIC_TIMEOUT = 0.1
 STARS_AMOUNT = 50
 obstacles = []
+obstacles_in_last_collisions = []
 
 
 def get_animation_frames(path):
@@ -59,6 +60,11 @@ async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
             obstacle.row, obstacle.column = row, column
             await asyncio.sleep(0)
             draw_frame(canvas, row, column, garbage_frame, negative=True)
+
+            if obstacle in obstacles_in_last_collisions:
+                obstacles_in_last_collisions.remove(obstacle)
+                return None
+
             row += speed
     finally:
         obstacles.remove(obstacle)
@@ -161,7 +167,9 @@ async def fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0
 
         for obstacle in obstacles:
             if obstacle.has_collision(row, column):
+                obstacles_in_last_collisions.append(obstacle)
                 return None
+
 
 def draw(canvas):
     curses.curs_set(False)
